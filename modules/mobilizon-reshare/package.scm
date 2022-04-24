@@ -225,3 +225,7 @@ events to your social media.")
             (add-after 'install 'install-completion-scripts
               (lambda _
                 (copy-recursively "etc" (string-append #$output "/etc"))))))))))
+
+
+(define-public mobilizon-reshare
+  mobilizon-reshare-0.3.1)

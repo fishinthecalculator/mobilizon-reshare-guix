@@ -1,10 +1,10 @@
 (define-module (mobilizon-reshare service)
-  #:use-module (gnu packages)
   #:use-module (gnu services)
   #:use-module (gnu system shadow)
   #:use-module (gnu packages admin)
   #:use-module (guix records)
   #:use-module (guix gexp)
+  #:use-module (mobilizon-reshare package)
   #:export (mobilizon-reshare-service-type
             mobilizon-reshare-configuration
             mobilizon-reshare-configuration?))
@@ -13,7 +13,7 @@
   mobilizon-reshare-configuration make-mobilizon-reshare-configuration
   mobilizon-reshare-configuration?
   (mobilizon-reshare mobilizon-reshare-configuration-mobilizon-reshare
-                     (default (specification->package "mobilizon-reshare")))
+                     (default mobilizon-reshare))
   (datadir mobilizon-reshare-datadir (default "/var/lib/mobilizon-reshare")))
 
 (define %mobilizon-reshare-accounts
