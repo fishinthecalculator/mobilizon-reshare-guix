@@ -15,7 +15,8 @@ To configure Guix for using this channel you need to create a `.config/guix/chan
 ``` scheme
 (cons* (channel
         (name 'mobilizon-reshare)
-        (url "https://github.com/fishinthecalculator/mobilizon-reshare-guix"))
+        (url "https://github.com/fishinthecalculator/mobilizon-reshare-guix")
+        (branch "main"))
        %default-channels)
 ```
 
@@ -24,7 +25,8 @@ Otherwise, if you already have a `.config/guix/channels.scm` you can simply prep
 ``` scheme
 (cons* (channel
         (name 'mobilizon-reshare)
-        (url "https://github.com/fishinthecalculator/mobilizon-reshare-guix"))
+        (url "https://github.com/fishinthecalculator/mobilizon-reshare-guix")
+        (branch "main"))
        (channel
         (name 'nonguix)
         (url "https://gitlab.com/nonguix/nonguix")
