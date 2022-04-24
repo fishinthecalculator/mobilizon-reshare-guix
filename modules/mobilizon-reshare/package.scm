@@ -1,27 +1,16 @@
 (define-module (mobilizon-reshare package)
-  ;; #:use-module (guix download)
   #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module (guix packages)
-  ;; #:use-module (guix transformations)
   #:use-module (guix utils)
-  ;; #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix build-system python)
   #:use-module (gnu packages check)
   #:use-module (gnu packages databases)
   #:use-module (gnu packages markup)
-  ;; #:use-module (gnu packages openstack)
-  ;; #:use-module (gnu packages python-build)
-  ;; #:use-module (gnu packages python-check)
-  ;; #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
-  ;; #:use-module (gnu packages qt)
   #:use-module (gnu packages time)
   #:use-module (mobilizon-reshare dependencies))
-  ;; #:use-module (ice-9 rdelim)
-  ;; #:use-module (srfi srfi-1)
-
 
 (define coopyleft
   (let ((license (@@ (guix licenses) license)))
@@ -29,19 +18,23 @@
              "https://wiki.coopcycle.org/en:license"
              "Coopyleft License")))
 
+(define (mobilizon-reshare-origin version hash)
+  (origin
+    (method git-fetch)
+    (uri (git-reference
+          (url "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare")
+          (commit (string-append "v" version))))
+    (sha256 (base32 hash))
+    (file-name (git-file-name "mobilizon-reshare" version))))
+
 (define-public mobilizon-reshare-0.1.0
   (package
     (name "mobilizon-reshare")
     (version "0.1.0")
     (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare")
-             (commit (string-append "v" version))))
-       (sha256
-        (base32 "0vg6r28zq65vfsrcskypgq132psbvyw8pb88q1qyaq6f7k0yy1c0"))
-       (file-name (git-file-name name version))))
+     (mobilizon-reshare-origin
+      version
+      "0vg6r28zq65vfsrcskypgq132psbvyw8pb88q1qyaq6f7k0yy1c0"))
     (build-system python-build-system)
     (arguments
      (list #:phases
@@ -101,14 +94,9 @@ events to your social media.")
     (name "mobilizon-reshare")
     (version "0.2.0")
     (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare")
-             (commit (string-append "v" version))))
-       (sha256
-        (base32 "0mssh89ag07sjbshqd8gzdadxakm1xs8iwdsnxfvvlb1f5lv3w6f"))
-       (file-name (git-file-name name version))))
+     (mobilizon-reshare-origin
+      version
+      "0mssh89ag07sjbshqd8gzdadxakm1xs8iwdsnxfvvlb1f5lv3w6f"))
     (arguments
      (list #:phases
            #~(modify-phases %standard-phases
@@ -168,14 +156,9 @@ events to your social media.")
     (name "mobilizon-reshare")
     (version "0.2.2")
     (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare")
-             (commit (string-append "v" version))))
-       (sha256
-        (base32 "0cgl0zkqq3z872qjzix0lqqmisgaavpj2rs0lxc5p0bfn698rmjl"))
-       (file-name (git-file-name name version))))
+     (mobilizon-reshare-origin
+      version
+      "0cgl0zkqq3z872qjzix0lqqmisgaavpj2rs0lxc5p0bfn698rmjl"))
     (arguments
      (substitute-keyword-arguments (package-arguments mobilizon-reshare-0.2.0)
        ((#:phases phases)
@@ -200,28 +183,18 @@ events to your social media.")
     (name "mobilizon-reshare")
     (version "0.2.3")
     (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare")
-             (commit (string-append "v" version))))
-       (sha256
-        (base32 "0c4d24ihs4yz054h6qvdw1441bv01jba8paiqii2302az4ir4mwj"))
-       (file-name (git-file-name name version))))))
+     (mobilizon-reshare-origin
+      version
+      "0c4d24ihs4yz054h6qvdw1441bv01jba8paiqii2302az4ir4mwj"))))
 
 (define-public mobilizon-reshare-0.3.0
   (package (inherit mobilizon-reshare-0.2.2)
     (name "mobilizon-reshare")
     (version "0.3.0")
     (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare")
-             (commit (string-append "v" version))))
-       (sha256
-        (base32 "0p6y5jjhqdc4l7n75scibc72rabqpigcmglqydwvly52gr2qw9mw"))
-       (file-name (git-file-name name version))))
+     (mobilizon-reshare-origin
+      version
+      "0p6y5jjhqdc4l7n75scibc72rabqpigcmglqydwvly52gr2qw9mw"))
     (propagated-inputs
        (list (click-8-instead-of-click-7 python-aerich)
              python-aiosqlite
@@ -242,14 +215,9 @@ events to your social media.")
     (name "mobilizon-reshare")
     (version "0.3.1")
     (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare")
-             (commit (string-append "v" version))))
-       (sha256
-        (base32 "0p6y5jjhqdc4l7n75scibc72rabqpigcmglqydwvly52gr2qw9mw"))
-       (file-name (git-file-name name version))))
+     (mobilizon-reshare-origin
+      version
+      "1lhb2m0a0fw3lz8lj0hr8a2jgizvp73z8lx85hxjag1z753vhr3m"))
     (arguments
      (substitute-keyword-arguments (package-arguments mobilizon-reshare-0.3.0)
        ((#:phases phases)
@@ -257,54 +225,3 @@ events to your social media.")
             (add-after 'install 'install-completion-scripts
               (lambda _
                 (copy-recursively "etc" (string-append #$output "/etc"))))))))))
-
-
-;; (define-public mobilizon-reshare-0.3.1
-;;   (package
-;;     ()
-;;     (name "mobilizon-reshare")
-;;     (version "0.3.1")
-;;     (source (local-file %source-dir
-;;                         #:recursive? #t
-;;                         #:select? (git-predicate %source-dir)))
-;;     (build-system python-build-system)
-;;     (arguments
-;;      (list #:phases
-;;            #~(modify-phases %standard-phases
-;;                (replace 'check
-;;                  (lambda* (#:key tests? #:allow-other-keys)
-;;                    (when tests?
-;;                      (setenv "POETRY_VIRTUALENVS_CREATE" "false")
-;;                      (invoke "./scripts/run_pipeline_tests.sh"))))
-;;                (add-after 'install 'install-completion-scripts
-;;                  (lambda _
-;;                    (copy-recursively "etc" (string-append #$output "/etc"))))
-;;                (add-before 'sanity-check 'set-dummy-config
-;;                  (lambda _
-;;                    ;; This is needed to prevent the tool from
-;;                    ;; crashing at startup during the sanity check.
-;;                    (setenv "SECRETS_FOR_DYNACONF"
-;;                            (string-append (getcwd)
-;;                                           "/mobilizon_reshare/.secrets.toml")))))))
-;;     (native-inputs
-;;      (list python-iniconfig
-;;            poetry
-;;            python-pytest
-;;            python-pytest-cov
-;;            python-pytest-asyncio
-;;            python-pytest-lazy-fixture
-;;            python-responses))
-;;     (propagated-inputs
-;;      (list (click-8-instead-of-click-7 python-aerich)
-;;            python-aiosqlite
-;;            python-appdirs
-;;            python-arrow
-;;            python-beautifulsoup4
-;;            python-click-8.0
-;;            (click-8-instead-of-click-7 dynaconf)
-;;            python-facebook-sdk
-;;            python-jinja2
-;;            python-markdownify
-;;            python-requests
-;;            python-tweepy
-;;            python-tortoise-orm-0.18.1))))
