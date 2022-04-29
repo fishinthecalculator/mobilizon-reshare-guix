@@ -8,6 +8,10 @@ A [channel](https://guix.gnu.org/en/manual/devel/en/guix.html#Channels) is rough
 
 This channels hosts all versions of [Mobilizon Reshare](https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare).
 
+## Substitutes
+
+Unfortunately currently there are no resources to distribute [substitutes](https://guix.gnu.org/en/manual/devel/en/guix.html#Substitutes). This means that Guix'll try and build Mobilizon Reshare and its dependencies locally on your machine. It's a one-time process, completely transparent with respect to the user and it shouldn't take more than a couple of minutes.
+
 ## Configure
 
 To configure Guix for using this channel you need to create a `.config/guix/channels.scm` file with the following content:
@@ -20,7 +24,7 @@ To configure Guix for using this channel you need to create a `.config/guix/chan
        %default-channels)
 ```
 
-Otherwise, if you already have a `.config/guix/channels.scm` you can simply prepend this channel to the preexisitng ones:
+Otherwise, if you already have a `.config/guix/channels.scm` you can simply prepend this channel to the preexisting ones:
 
 ``` scheme
 (cons* (channel
