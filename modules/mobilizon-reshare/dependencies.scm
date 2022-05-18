@@ -14,6 +14,37 @@
   #:use-module (gnu packages qt)
   #:use-module (gnu packages time))
 
+;; This comes from Guix commit 812f2a185a82beb9dbd6af499a516a49d722932d
+(define-public python-jinja2-3.0
+  (package
+    (name "python-jinja2")
+    (version "3.0.1")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "Jinja2" version))
+       (sha256
+        (base32
+         "197ms1wimxql650245v63wkv04n8bicj549wfhp51bx68x5lhgvh"))))
+    (build-system python-build-system)
+    (arguments
+     '(#:phases (modify-phases %standard-phases
+                  (replace 'check
+                    (lambda* (#:key tests? #:allow-other-keys)
+                      (if tests?
+                          (invoke "pytest" "-vv")
+                          (format #t "test suite not run~%")))))))
+    (native-inputs
+     (list python-pytest))
+    (propagated-inputs
+     (list python-markupsafe))
+    (home-page "http://jinja.pocoo.org/")
+    (synopsis "Python template engine")
+    (description
+     "Jinja2 is a small but fast and easy to use stand-alone template engine
+written in pure Python.")
+    (license license:bsd-3)))
+
 ;; This comes from Guix commit ef347195278eb160ec725bbdccf71d67c0fa4271
 (define-public python-asynctest-from-the-past
   (package

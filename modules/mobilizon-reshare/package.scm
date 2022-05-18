@@ -168,6 +168,8 @@ events to your social media.")
      (modify-inputs (package-propagated-inputs mobilizon-reshare-0.2.0)
       (replace "python-click"
         python-click-8.0)
+      (replace "python-jinja2"
+        python-jinja2-3.0)
       (replace "python-aerich"
         (click-8-instead-of-click-7 python-aerich))
       (replace "dynaconf"
@@ -204,7 +206,7 @@ events to your social media.")
              python-click-8.0
              (click-8-instead-of-click-7 dynaconf)
              python-facebook-sdk
-             python-jinja2
+             python-jinja2-3.0
              python-markdownify
              python-requests
              python-tweepy
