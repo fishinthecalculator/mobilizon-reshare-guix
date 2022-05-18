@@ -6,7 +6,7 @@
 
 A [channel](https://guix.gnu.org/en/manual/devel/en/guix.html#Channels) is roughly the Guix equivalent of Ubuntu's PPAs or container registries. It's a software repository providing Guix package and service definitions.
 
-This channels hosts all versions of [Mobilizon Reshare](https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare).
+This channels hosts all versions of [Mobilizon Reshare](https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare) and a rudimental Mobilizon Reshare Guix service.
 
 ## Substitutes
 
