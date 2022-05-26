@@ -43,9 +43,15 @@ Otherwise, if you already have a `.config/guix/channels.scm` you can simply prep
        %default-channels)
 ```
 
-## Use a given Mobilizon Reshare version
+## Use a given mobilizon-reshare version\
 
-You can spawn a shell with any given Mobilizon Reshare's version with:
+You can install mobilizon-reshare with:
+
+```shell
+guix install mobilizon-reshare
+```
+
+Otherwise you can spawn a shell with any given Mobilizon Reshare's version with:
 
 ``` shell
 guix shell mobilizon-reshare@0.3.1
