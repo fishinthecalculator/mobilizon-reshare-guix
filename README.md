@@ -43,7 +43,7 @@ Otherwise, if you already have a `.config/guix/channels.scm` you can simply prep
        %default-channels)
 ```
 
-## Use a given mobilizon-reshare version\
+## Use a given mobilizon-reshare version
 
 You can install mobilizon-reshare with:
 
