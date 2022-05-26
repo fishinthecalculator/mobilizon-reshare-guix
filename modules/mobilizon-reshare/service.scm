@@ -51,4 +51,6 @@
                              (const %mobilizon-reshare-accounts))
           (service-extension activation-service-type
                              %mobilizon-reshare-activation)))
-   (default-value (mobilizon-reshare-configuration))))
+   (default-value (mobilizon-reshare-configuration))
+   (description "This service creates a dedicated user account and installs
+Mobilizon Reshare in the system profile.")))
