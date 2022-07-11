@@ -66,27 +66,31 @@
      (list python-asynctest-from-the-past
            python-iniconfig
            poetry
+           python-pypika-tortoise
            python-pytest
            python-pytest-asyncio-0.15
+           python-pytz
            python-responses))
     (propagated-inputs
      (list python-aiosqlite
            python-appdirs
-           python-arrow-1.1
+           python-arrow
            python-beautifulsoup4
            python-click
            dynaconf
            python-jinja2
            python-markdownify
-           python-requests
-           python-tortoise-orm))
+           python-requests-2.25
+           python-tortoise-orm-0.17))
     (home-page
      "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare")
     (synopsis
-     "Publish Mobilizon events to your social networks")
+     "Enables an organization to automate their social media strategy")
     (description
-     "This package provides a CLI application to publish your Mobilizon
-events to your social media.")
+     "The goal of @code{mobilizon_reshare} is to provide a suite to reshare
+Mobilizon events on a broad selection of platforms.  This tool enables an
+organization to automate their social media strategy in regards to events and
+their promotion.")
     (license coopyleft)))
 
 (define-public mobilizon-reshare-0.2.0
@@ -136,20 +140,21 @@ events to your social media.")
              python-pytest-lazy-fixture
              python-responses))
     (propagated-inputs
-     (list python-aerich
+     (list (patch-with-requests-2.25 python-aerich)
            python-aiosqlite
            python-appdirs
            python-arrow
            python-beautifulsoup4
            python-click
            dynaconf
-           python-facebook-sdk.git
+           (patch-with-requests-2.25 python-facebook-sdk.git)
            python-jinja2
            python-markdownify
-           python-requests
+           python-requests-2.25
            python-telegram-bot
-           python-tweepy
-           python-tortoise-orm-0.18.1))))
+           (patch-with-requests-2.25 python-tweepy)
+           (patch-with-requests-2.25
+            python-tortoise-orm-0.18.1)))))
 
 (define-public mobilizon-reshare-0.2.2
   (package (inherit mobilizon-reshare-0.2.0)
@@ -165,20 +170,20 @@ events to your social media.")
         #~(modify-phases #$phases
             (delete 'prevent-versions-enforcing)))))
     (propagated-inputs
-     (modify-inputs (package-propagated-inputs mobilizon-reshare-0.2.0)
-      (replace "python-click"
-        python-click-8.0)
-      (replace "python-jinja2"
-        python-jinja2-3.0)
-      (replace "python-aerich"
-        (click-8-instead-of-click-7 python-aerich))
-      (replace "dynaconf"
-        (click-8-instead-of-click-7 dynaconf))
-      (delete "python-facebook-sdk.git")
-      (append (requests-2.25-instead-of-requests-2.26 python-facebook-sdk))
-      (replace "python-requests" python-requests-2.25)
-      (replace "python-tweepy"
-        (requests-2.25-instead-of-requests-2.26 python-tweepy-4.1))))))
+         (list (patch-for-mobilizon-reshare-0.2.2 python-aerich)
+               python-aiosqlite
+               python-appdirs
+               python-arrow
+               python-beautifulsoup4
+               python-click-8.0
+               (patch-for-mobilizon-reshare-0.2.2 dynaconf)
+               (patch-for-mobilizon-reshare-0.2.2 python-facebook-sdk)
+               python-jinja2-3.0
+               python-markdownify
+               python-requests-2.25
+               python-telegram-bot
+               (patch-for-mobilizon-reshare-0.2.2 python-tweepy-4.1)
+               (patch-for-mobilizon-reshare-0.2.2 python-tortoise-orm-0.18.1)))))
 
 (define-public mobilizon-reshare-0.2.3
   (package (inherit mobilizon-reshare-0.2.2)
@@ -197,20 +202,21 @@ events to your social media.")
      (mobilizon-reshare-origin
       version
       "0p6y5jjhqdc4l7n75scibc72rabqpigcmglqydwvly52gr2qw9mw"))
+    (native-inputs (package-native-inputs mobilizon-reshare-0.2.0))
     (propagated-inputs
-       (list (click-8-instead-of-click-7 python-aerich)
+       (list (patch-for-mobilizon-reshare-0.3 python-aerich)
              python-aiosqlite
              python-appdirs
              python-arrow
              python-beautifulsoup4
              python-click-8.0
-             (click-8-instead-of-click-7 dynaconf)
-             python-facebook-sdk
+             (patch-for-mobilizon-reshare-0.3 dynaconf)
+             (patch-for-mobilizon-reshare-0.3 python-facebook-sdk)
              python-jinja2-3.0
              python-markdownify
-             python-requests
-             python-tweepy
-             python-tortoise-orm-0.18.1))))
+             (patch-for-mobilizon-reshare-0.3 python-requests-2.26)
+             (patch-for-mobilizon-reshare-0.3 python-tweepy)
+             (patch-for-mobilizon-reshare-0.3 python-tortoise-orm-0.18.1)))))
 
 (define-public mobilizon-reshare-0.3.1
   (package (inherit mobilizon-reshare-0.3.0)
@@ -228,6 +234,17 @@ events to your social media.")
               (lambda _
                 (copy-recursively "etc" (string-append #$output "/etc"))))))))))
 
+(define-public mobilizon-reshare-0.3.2
+  (package (inherit mobilizon-reshare-0.3.1)
+    (name "mobilizon-reshare")
+    (version "0.3.2")
+    (source
+     (mobilizon-reshare-origin
+      version
+      "11dr3xglnrwdmqjinn1jl3bdqiqpzbij1vyn6vj16r5fx2g8gbf5"))
+    (propagated-inputs
+       (modify-inputs (package-propagated-inputs mobilizon-reshare-0.3.1)
+         (replace "python-jinja2" python-jinja2)))))
 
 (define-public mobilizon-reshare
-  mobilizon-reshare-0.3.1)
+  mobilizon-reshare-0.3.2)

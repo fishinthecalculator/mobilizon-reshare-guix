@@ -7,6 +7,7 @@
   #:use-module (guix build-system python)
   #:use-module (gnu packages check)
   #:use-module (gnu packages databases)
+  #:use-module (gnu packages openstack)
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-web)
@@ -14,84 +15,47 @@
   #:use-module (gnu packages qt)
   #:use-module (gnu packages time))
 
-;; This comes from Guix commit 812f2a185a82beb9dbd6af499a516a49d722932d
-(define-public python-jinja2-3.0
-  (package
-    (name "python-jinja2")
-    (version "3.0.1")
-    (source
+(define-public python-iso8601-0.1.13
+  (package (inherit python-iso8601)
+   (version "0.1.13")
+   (source
      (origin
        (method url-fetch)
-       (uri (pypi-uri "Jinja2" version))
+       (uri (pypi-uri "iso8601" version))
        (sha256
-        (base32
-         "197ms1wimxql650245v63wkv04n8bicj549wfhp51bx68x5lhgvh"))))
-    (build-system python-build-system)
-    (arguments
-     '(#:phases (modify-phases %standard-phases
-                  (replace 'check
-                    (lambda* (#:key tests? #:allow-other-keys)
-                      (if tests?
-                          (invoke "pytest" "-vv")
-                          (format #t "test suite not run~%")))))))
-    (native-inputs
-     (list python-pytest))
-    (propagated-inputs
-     (list python-markupsafe))
-    (home-page "http://jinja.pocoo.org/")
-    (synopsis "Python template engine")
-    (description
-     "Jinja2 is a small but fast and easy to use stand-alone template engine
-written in pure Python.")
-    (license license:bsd-3)))
+         (base32 "1cgfj91khil4ii5gb8s6nxwm73vx7hqc2k79dd9d8990ylmc5ppp"))))))
 
-;; This comes from Guix commit ef347195278eb160ec725bbdccf71d67c0fa4271
-(define-public python-asynctest-from-the-past
-  (package
-    (name "python-asynctest")
-    (version "0.13.0")
-    (source
+(define-public python-idna-2.10
+  (package (inherit python-idna)
+   (version "2.10")
+   (source
      (origin
        (method url-fetch)
-       (uri (pypi-uri "asynctest" version))
+       (uri (pypi-uri "idna" version))
        (sha256
-        (base32
-         "1b3zsy7p84gag6q8ai2ylyrhx213qdk2h2zb6im3xn0m5n264y62"))))
-    (build-system python-build-system)
-    (arguments
-     '(#:tests? #f))
-    (home-page "https://github.com/Martiusweb/asynctest")
-    (synopsis "Extension of unittest for testing asyncio libraries")
-    (description
-     "The package asynctest is built on top of the standard unittest module
-and cuts down boilerplate code when testing libraries for asyncio.")
-    (license license:asl2.0)))
+         (base32 "1xmk3s92d2vq42684p61wixfmh3qpr2mw762w0n6662vhlpqf1xk"))))))
 
-(define-public python-arrow-1.1
-  (package (inherit python-arrow)
-    (name "python-arrow")
-    (version "1.1.0")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "arrow" version))
-       (sha256
-        (base32
-         "1n2vzyrirfj7fp0zn6iipm3i8bch0g4m14z02nrvlyjiyfmi7zmq"))))))
+(define-public python-requests-2.25
+ (let ((patch
+        (package-input-rewriting/spec `(("python-idna" . ,(const python-idna-2.10))
+                                        ("python-iso8601" . ,(const python-iso8601-0.1.13))))))
+   (patch
+    (package (inherit python-requests)
+     (version "2.25.1")
+     (source
+      (origin
+        (method url-fetch)
+        (uri (pypi-uri "requests" version))
+        (sha256
+          (base32 "015qflyqsgsz09gnar69s6ga74ivq5kch69s4qxz3904m7a3v5r7"))))
+     (propagated-inputs
+       (modify-inputs (package-propagated-inputs python-requests)
+        (append python-chardet)))))))
 
-(define-public python-pytest-asyncio-0.15
-  (package (inherit python-pytest-asyncio)
-    (name "python-pytest-asyncio")
-    (version "0.15.1")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "pytest-asyncio" version))
-       (sha256
-        (base32
-         "0vrzsrg3j1cfd57m0b3r5xf87rslgcs42jya346mdg9bc6wwwr15"))))
-    (arguments
-     `(#:tests? #f))))
+(define-public patch-with-requests-2.25
+  (package-input-rewriting/spec `(("python-idna" . ,(const python-idna-2.10))
+                                  ("python-iso8601" . ,(const python-iso8601-0.1.13))
+                                  ("python-requests" . ,(const python-requests-2.25)))))
 
 (define-public python-facebook-sdk
   (package
@@ -118,23 +82,112 @@ Facebook authentication.")
   (let ((version (package-version python-facebook-sdk))
         (revision "0")
         (commit "3fa89fec6a20dd070ccf57968c6f89256f237f54"))
-      (package (inherit python-facebook-sdk)
-        (name "python-facebook-sdk.git")
-        (version (git-version version revision commit))
-        (source
-         (origin
-           (method git-fetch)
-           (uri
-            (git-reference
-             (url "https://github.com/mobolic/facebook-sdk")
-             (commit commit)))
-           (file-name (git-file-name name version))
-           (sha256
-            (base32
-             "0vayxkg6p8wdj63qvzr24dj3q7rkyhr925b31z2qv2mnbas01dmg"))))
-        (arguments
-         ;; Tests depend on network access.
-         `(#:tests? #false)))))
+    (package (inherit python-facebook-sdk)
+     (name "python-facebook-sdk.git")
+     (version (git-version version revision commit))
+     (source
+      (origin
+        (method git-fetch)
+        (uri
+         (git-reference
+          (url "https://github.com/mobolic/facebook-sdk")
+          (commit commit)))
+        (file-name (git-file-name name version))
+        (sha256
+         (base32
+          "0vayxkg6p8wdj63qvzr24dj3q7rkyhr925b31z2qv2mnbas01dmg"))))
+     (arguments
+      `(#:tests? #false)))))
+
+(define-public python-tweepy-4.1
+ (package (inherit python-tweepy)
+  (version "4.1.0")
+  (source
+   (origin
+     (method url-fetch)
+     (uri (pypi-uri "tweepy" version))
+     (sha256
+       (base32 "04fmlw6a89r5s9ln5jb3kl2hcn5wdycmi0wbpb4l6w5cwn6r7ql8"))))
+  (arguments
+   `(#:tests? #f))))
+
+(define-public python-requests-2.26
+ (package (inherit python-requests)
+  (version "2.26.0")
+  (source
+   (origin
+     (method url-fetch)
+     (uri (pypi-uri "requests" version))
+     (sha256
+       (base32 "19q73fq7hip7b74fwls3p9x6zwvfwqcwpn6kha3zsgvrrzw5iamq"))))
+  (propagated-inputs
+    (modify-inputs (package-propagated-inputs python-requests)
+     (replace "python-iso8601" python-iso8601-0.1.13)))))
+
+(define-public patch-with-requests-2.26
+  (package-input-rewriting/spec `(("python-iso8601" . ,(const python-iso8601-0.1.13))
+                                  ("python-requests" . ,(const python-requests-2.26)))))
+
+;; This comes from Guix commit 812f2a185a82beb9dbd6af499a516a49d722932d
+(define-public python-jinja2-3.0
+  (package (inherit python-jinja2)
+    (name "python-jinja2")
+    (version "3.0.1")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "Jinja2" version))
+       (sha256
+        (base32
+         "197ms1wimxql650245v63wkv04n8bicj549wfhp51bx68x5lhgvh"))))
+    (build-system python-build-system)
+    (arguments
+     '(#:phases (modify-phases %standard-phases
+                  (replace 'check
+                    (lambda* (#:key tests? #:allow-other-keys)
+                      (if tests?
+                          (invoke "pytest" "-vv")
+                          (format #t "test suite not run~%")))))))
+    (native-inputs
+     (list python-pytest))
+    (propagated-inputs
+     (list python-markupsafe))))
+
+;; This comes from Guix commit ef347195278eb160ec725bbdccf71d67c0fa4271
+(define-public python-asynctest-from-the-past
+  (package
+    (name "python-asynctest")
+    (version "0.13.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "asynctest" version))
+       (sha256
+        (base32
+         "1b3zsy7p84gag6q8ai2ylyrhx213qdk2h2zb6im3xn0m5n264y62"))))
+    (build-system python-build-system)
+    (arguments
+     '(#:tests? #f))
+    (home-page "https://github.com/Martiusweb/asynctest")
+    (synopsis "Extension of unittest for testing asyncio libraries")
+    (description
+     "The package asynctest is built on top of the standard unittest module
+and cuts down boilerplate code when testing libraries for asyncio.")
+    (license license:asl2.0)))
+
+(define-public python-pytest-asyncio-0.15
+  (package (inherit python-pytest-asyncio)
+    (name "python-pytest-asyncio")
+    (version "0.15.1")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "pytest-asyncio" version))
+       (sha256
+        (base32
+         "0vrzsrg3j1cfd57m0b3r5xf87rslgcs42jya346mdg9bc6wwwr15"))))
+    (arguments
+     `(#:tests? #f))))
 
 (define-public python-ddlparse
   (package
@@ -175,41 +228,76 @@ Facebook authentication.")
        (uri (pypi-uri "tortoise-orm" version))
        (sha256
          (base32 "1c8xq3620z04i1yp8n6bfshi98qkjjydkbs3zld78a885p762wsk"))))
-   (arguments
-    `(#:tests? #f
-      #:phases
-      (modify-phases %standard-phases
-        (delete 'sanity-check))))
    (propagated-inputs
-    (modify-inputs (package-propagated-inputs python-tortoise-orm)
-     (replace "python-pypika-tortoise" python-pypika-tortoise-0.1.3)))))
+        (list python-aiomysql
+              python-aiosqlite
+              python-asyncmy
+              python-asyncpg
+              python-ciso8601
+              python-iso8601-0.1.13
+              python-pypika-tortoise-0.1.3
+              python-pytz
+              python-rapidjson
+              python-uvloop))))
 
 (define-public python-aerich
-  (package
-    (name "python-aerich")
-    (version "0.6.2")
-    (source
-      (origin
-        (method url-fetch)
-        (uri (pypi-uri "aerich" version))
-        (sha256
-          (base32 "1r4xqw9x0fvdjbd36riz72n3ih1p7apv2p92lq1h6nwjfzwr2jvq"))))
-    (build-system python-build-system)
-    (propagated-inputs
-      (list python-asyncmy
-            python-asyncpg
-            python-click
-            python-ddlparse
-            python-dictdiffer
-            python-pytz
-            python-pypika-tortoise-0.1.3
-            python-tomlkit
-            python-tortoise-orm-0.18.1))
-    (home-page "https://github.com/tortoise/aerich")
-    (synopsis "A database migrations tool for Tortoise ORM.")
-    (description
-      "This package provides a database migrations tool for Tortoise ORM.")
-    (license #f)))
+ (package
+  (name "python-aerich")
+  (version "0.6.3")
+  (source
+   (origin
+    (method git-fetch)
+    (uri (git-reference
+          (url "https://github.com/tortoise/aerich")
+          (commit (string-append "v" version))))
+    (file-name (git-file-name name version))
+    (sha256
+     (base32
+      "1ndkl8vvn6bxh19s26k3p5mlk1sk4ziw73c07av08va6cfp5ln0j"))))
+  (build-system python-build-system)
+  (arguments
+   '(#:phases
+     (modify-phases %standard-phases
+       (add-after 'unpack 'generate-setup.py
+        (lambda* (#:key inputs outputs #:allow-other-keys)
+         ;; FIXME: This is an hack needed to get poetry's setup.py.
+         (setenv "POETRY_VIRTUALENVS_CREATE" "false")
+         (invoke "poetry" "build" "-f" "sdist")
+         (invoke "bash" "-c"
+                (string-append "tar --wildcards "
+                               "-xvf dist/*-`poetry version -s`.tar.gz "
+                               "-O '*/setup.py' > setup.py"))))
+       (replace 'check
+         (lambda* (#:key tests? outputs #:allow-other-keys)
+          (when tests?
+           (let ((out (assoc-ref outputs "out")))
+            (invoke "pytest" "-vv"))))))))
+  (native-inputs
+   (list poetry
+         python-bandit
+         python-cryptography
+         python-isort
+         python-pytest
+         python-pytest-asyncio
+         python-pytest-mock
+         python-pytest-xdist))
+  (propagated-inputs
+   (list python-asyncmy
+         python-asyncpg
+         python-click
+         python-ddlparse
+         python-dictdiffer
+         python-pydantic
+         python-tomlkit
+         python-tortoise-orm-0.18.1))
+  (home-page "https://github.com/tortoise/aerich")
+  (synopsis "Database migrations tool for Tortoise ORM (Object Relational
+Mapper)")
+  (description
+   "This package provides @code{aerich}, a Python database migrations tool
+for Tortoise ORM (Object Relational Mapper).  It can be used both
+programmatically or as a standalone CLI application.")
+  (license license:asl2.0)))
 
 (define-public python-pytest-tornado5
   (package
@@ -335,27 +423,20 @@ simplify testing of asynchronous tornado applications.")
     (description "We have made you a wrapper you can't refuse")
     (license #f)))
 
-(define-public python-tweepy-4.1
- (package (inherit python-tweepy)
-  (version "4.1.0")
-  (source
-   (origin
-     (method url-fetch)
-     (uri (pypi-uri "tweepy" version))
-     (sha256
-       (base32 "04fmlw6a89r5s9ln5jb3kl2hcn5wdycmi0wbpb4l6w5cwn6r7ql8"))))
-  (arguments
-   `(#:tests? #f))))
-
-(define-public python-requests-2.25
- (package (inherit python-requests)
-  (version "2.25.1")
-  (source
-   (origin
-     (method url-fetch)
-     (uri (pypi-uri "requests" version))
-     (sha256
-       (base32 "015qflyqsgsz09gnar69s6ga74ivq5kch69s4qxz3904m7a3v5r7"))))))
+(define-public python-tortoise-orm-0.17
+  (package (inherit python-tortoise-orm)
+   (version "0.17.8")
+   (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "tortoise-orm" version))
+       (sha256
+         (base32 "1gzgiypln7lck3p95vk3i8rdx1bjbmmlcpb8xpba8cjdjvlj0l0z"))))
+   (arguments
+    `(#:tests? #f))
+   (propagated-inputs
+    (modify-inputs (package-propagated-inputs python-tortoise-orm)
+     (replace "python-iso8601" python-iso8601-0.1.13)))))
 
 (define-public python-click-8.0
  (package (inherit python-click)
@@ -370,5 +451,13 @@ simplify testing of asynchronous tornado applications.")
 (define-public click-8-instead-of-click-7
   (package-input-rewriting/spec `(("python-click" . ,(const python-click-8.0)))))
 
-(define-public requests-2.25-instead-of-requests-2.26
-  (package-input-rewriting/spec `(("python-requests" . ,(const python-requests-2.25)))))
+(define-public patch-for-mobilizon-reshare-0.2.2
+  (package-input-rewriting/spec `(("python-idna" . ,(const python-idna-2.10))
+                                  ("python-iso8601" . ,(const python-iso8601-0.1.13))
+                                  ("python-requests" . ,(const python-requests-2.25))
+                                  ("python-click" . ,(const python-click-8.0)))))
+
+(define-public patch-for-mobilizon-reshare-0.3
+  (package-input-rewriting/spec `(("python-iso8601" . ,(const python-iso8601-0.1.13))
+                                  ("python-requests" . ,(const python-requests-2.26))
+                                  ("python-click" . ,(const python-click-8.0)))))
