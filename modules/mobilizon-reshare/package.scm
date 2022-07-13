@@ -4,6 +4,9 @@
   #:use-module (guix packages)
   #:use-module (guix utils)
   #:use-module (guix build-system python)
+  #:use-module (gnu packages base)
+  #:use-module (gnu packages bash)
+  #:use-module (gnu packages compression)
   #:use-module (gnu packages check)
   #:use-module (gnu packages databases)
   #:use-module (gnu packages markup)
@@ -25,7 +28,28 @@
           (url "https://github.com/Tech-Workers-Coalition-Italia/mobilizon-reshare")
           (commit (string-append "v" version))))
     (sha256 (base32 hash))
-    (file-name (git-file-name "mobilizon-reshare" version))))
+    (file-name (git-file-name "mobilizon-reshare" version))
+    (modules '((guix build utils)))
+    (snippet
+     #~(begin
+         (let ((bash (string-append #$bash "/bin/bash"))
+               (gzip (string-append #$gzip "/bin/gzip"))
+               (poetry (string-append #$poetry "/bin/poetry"))
+               (tar (string-append #$tar "/bin/tar"))
+               (tests-script "./scripts/run_pipeline_tests.sh"))
+           ;; This is an hack to obtain poetry's setup.py.
+           (setenv "POETRY_VIRTUALENVS_CREATE" "false")
+           (invoke poetry "build" "-f" "sdist")
+           (invoke bash "-c" (string-append "cd dist && " gzip " -cd ./*-`" poetry " version -s`.tar.gz > out.tar"))
+           (invoke bash "-c"
+                   (string-append
+                    tar " --wildcards -xvf dist/out.tar -O '*/setup.py' > setup.py"))
+           ;; Reduce source size.
+           (delete-file-recursively "dist")
+           ;; In 0.1.0 we had no script.
+           (when (file-exists? tests-script)
+             (substitute* tests-script
+               (("poetry") poetry))))))))
 
 (define-public mobilizon-reshare-0.1.0
   (package
@@ -39,19 +63,7 @@
     (arguments
      (list #:phases
            #~(modify-phases %standard-phases
-               (add-after 'unpack 'generate-setup.py
-                (lambda _
-                  ;; This hack is needed to get poetry's
-                  ;; setup.py.
-                  (setenv "POETRY_VIRTUALENVS_CREATE" "false")
-                  (invoke "poetry" "build" "-f" "sdist")
-                  (invoke "bash" "-c"
-                          (string-join
-                           `("tar" "--wildcards" "-xvf"
-                             "dist/*-`poetry version -s`.tar.gz" "-O '*/setup.py'"
-                             "> setup.py")
-                           " "))))
-               (add-after 'generate-setup.py 'prevent-versions-enforcing
+               (add-after 'unpack 'prevent-versions-enforcing
                  (lambda _
                    (substitute* "setup.py"
                      (("'install_requires': install_requires,") ""))))
@@ -65,7 +77,6 @@
     (native-inputs
      (list python-asynctest-from-the-past
            python-iniconfig
-           poetry
            python-pypika-tortoise
            python-pytest
            python-pytest-asyncio-0.15
@@ -104,25 +115,14 @@ their promotion.")
     (arguments
      (list #:phases
            #~(modify-phases %standard-phases
-               (add-after 'unpack 'generate-setup.py
-                (lambda _
-                  ;; This hack is needed to get poetry's
-                  ;; setup.py.
-                  (setenv "POETRY_VIRTUALENVS_CREATE" "false")
-                  (invoke "poetry" "build" "-f" "sdist")
-                  (invoke "bash" "-c"
-                          (string-join
-                           `("tar" "--wildcards" "-xvf"
-                             "dist/*-`poetry version -s`.tar.gz" "-O '*/setup.py'"
-                             "> setup.py")
-                           " "))))
-               (add-after 'generate-setup.py 'prevent-versions-enforcing
+               (add-after 'unpack 'prevent-versions-enforcing
                  (lambda _
                    (substitute* "setup.py"
                      (("'install_requires': install_requires,") ""))))
                (replace 'check
                  (lambda* (#:key tests? #:allow-other-keys)
                    (when tests?
+                     (setenv "POETRY_VIRTUALENVS_CREATE" "false")
                      (invoke "./scripts/run_pipeline_tests.sh"))))
                (add-before 'sanity-check 'set-dummy-config
                  (lambda _
@@ -133,27 +133,26 @@ their promotion.")
                                           "/mobilizon_reshare/.secrets.toml")))))))
     (native-inputs
        (list python-iniconfig
-             poetry
              python-pytest
              python-pytest-cov
              python-pytest-asyncio
              python-pytest-lazy-fixture
              python-responses))
     (propagated-inputs
-     (list (patch-with-requests-2.25 python-aerich)
+     (list (patch-for-mobilizon-reshare-0.2.0 python-aerich)
            python-aiosqlite
            python-appdirs
            python-arrow
            python-beautifulsoup4
            python-click
            dynaconf
-           (patch-with-requests-2.25 python-facebook-sdk.git)
+           (patch-for-mobilizon-reshare-0.2.0 python-facebook-sdk.git)
            python-jinja2
            python-markdownify
            python-requests-2.25
            python-telegram-bot
-           (patch-with-requests-2.25 python-tweepy)
-           (patch-with-requests-2.25
+           (patch-for-mobilizon-reshare-0.2.0 python-tweepy)
+           (patch-for-mobilizon-reshare-0.2.0
             python-tortoise-orm-0.18.1)))))
 
 (define-public mobilizon-reshare-0.2.2
