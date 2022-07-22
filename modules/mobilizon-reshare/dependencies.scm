@@ -1,10 +1,14 @@
 (define-module (mobilizon-reshare dependencies)
+  #:use-module (guix gexp)
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix packages)
   #:use-module (guix transformations)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix build-system python)
+  #:use-module (gnu packages base)
+  #:use-module (gnu packages bash)
+  #:use-module (gnu packages compression)
   #:use-module (gnu packages check)
   #:use-module (gnu packages databases)
   #:use-module (gnu packages openstack)
@@ -51,11 +55,6 @@
      (propagated-inputs
        (modify-inputs (package-propagated-inputs python-requests)
         (append python-chardet)))))))
-
-(define-public patch-with-requests-2.25
-  (package-input-rewriting/spec `(("python-idna" . ,(const python-idna-2.10))
-                                  ("python-iso8601" . ,(const python-iso8601-0.1.13))
-                                  ("python-requests" . ,(const python-requests-2.25)))))
 
 (define-public python-facebook-sdk
   (package
@@ -253,28 +252,26 @@ and cuts down boilerplate code when testing libraries for asyncio.")
     (file-name (git-file-name name version))
     (sha256
      (base32
-      "1ndkl8vvn6bxh19s26k3p5mlk1sk4ziw73c07av08va6cfp5ln0j"))))
+      "1ndkl8vvn6bxh19s26k3p5mlk1sk4ziw73c07av08va6cfp5ln0j"))
+    (modules '((guix build utils)))
+    (snippet
+     #~(begin
+         (let ((bash (string-append #$bash "/bin/bash"))
+               (gzip (string-append #$gzip "/bin/gzip"))
+               (poetry (string-append #$poetry "/bin/poetry"))
+               (tar (string-append #$tar "/bin/tar")))
+           ;; This is an hack to obtain poetry's setup.py.
+           (setenv "POETRY_VIRTUALENVS_CREATE" "false")
+           (invoke poetry "build" "-f" "sdist")
+           (invoke bash "-c" (string-append "cd dist && " gzip " -cd ./*-`" poetry " version -s`.tar.gz > out.tar"))
+           (invoke bash "-c"
+                   (string-append
+                    tar " --wildcards -xvf dist/out.tar -O '*/setup.py' > setup.py"))
+           ;; Reduce source size.
+           (delete-file-recursively "dist"))))))
   (build-system python-build-system)
-  (arguments
-   '(#:phases
-     (modify-phases %standard-phases
-       (add-after 'unpack 'generate-setup.py
-        (lambda* (#:key inputs outputs #:allow-other-keys)
-         ;; FIXME: This is an hack needed to get poetry's setup.py.
-         (setenv "POETRY_VIRTUALENVS_CREATE" "false")
-         (invoke "poetry" "build" "-f" "sdist")
-         (invoke "bash" "-c"
-                (string-append "tar --wildcards "
-                               "-xvf dist/*-`poetry version -s`.tar.gz "
-                               "-O '*/setup.py' > setup.py"))))
-       (replace 'check
-         (lambda* (#:key tests? outputs #:allow-other-keys)
-          (when tests?
-           (let ((out (assoc-ref outputs "out")))
-            (invoke "pytest" "-vv"))))))))
   (native-inputs
-   (list poetry
-         python-bandit
+   (list python-bandit
          python-cryptography
          python-isort
          python-pytest
@@ -289,7 +286,7 @@ and cuts down boilerplate code when testing libraries for asyncio.")
          python-dictdiffer
          python-pydantic
          python-tomlkit
-         python-tortoise-orm-0.18.1))
+         python-tortoise-orm))
   (home-page "https://github.com/tortoise/aerich")
   (synopsis "Database migrations tool for Tortoise ORM (Object Relational
 Mapper)")
@@ -451,6 +448,12 @@ simplify testing of asynchronous tornado applications.")
 (define-public click-8-instead-of-click-7
   (package-input-rewriting/spec `(("python-click" . ,(const python-click-8.0)))))
 
+(define-public patch-for-mobilizon-reshare-0.2.0
+  (package-input-rewriting/spec `(("python-idna" . ,(const python-idna-2.10))
+                                  ("python-iso8601" . ,(const python-iso8601-0.1.13))
+                                  ("python-requests" . ,(const python-requests-2.25))
+                                  ("python-tortoise-orm" . ,(const python-tortoise-orm-0.18.1)))))
+
 (define-public patch-for-mobilizon-reshare-0.2.2
   (package-input-rewriting/spec `(("python-idna" . ,(const python-idna-2.10))
                                   ("python-iso8601" . ,(const python-iso8601-0.1.13))
@@ -459,5 +462,6 @@ simplify testing of asynchronous tornado applications.")
 
 (define-public patch-for-mobilizon-reshare-0.3
   (package-input-rewriting/spec `(("python-iso8601" . ,(const python-iso8601-0.1.13))
+                                  ("python-tortoise-orm" . ,(const python-tortoise-orm-0.18.1))
                                   ("python-requests" . ,(const python-requests-2.26))
                                   ("python-click" . ,(const python-click-8.0)))))
